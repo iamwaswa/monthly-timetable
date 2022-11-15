@@ -63,6 +63,14 @@ export function usePrint<TElement extends HTMLElement>(
             printWindowDocument.head.appendChild(newStyleElement);
           }
         });
+
+      Array.from(document.querySelectorAll(`link[rel="stylesheet"]`))
+        .filter((linkElement) => {
+          return linkElement.parentNode?.nodeName.toLowerCase() === `head`;
+        })
+        .forEach((linkElement) => {
+          printWindowDocument.head.appendChild(linkElement);
+        });
     },
     []
   );
