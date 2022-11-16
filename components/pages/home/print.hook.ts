@@ -74,6 +74,8 @@ export function usePrint<TElement extends HTMLElement>(
         const linkElement = document.querySelector(`link[rel="stylesheet"]`);
 
         if (linkElement) {
+          console.log(linkElement);
+
           const newHeadLinkElement = printWindowDocument.createElement(
             linkElement.tagName
           );
@@ -84,6 +86,8 @@ export function usePrint<TElement extends HTMLElement>(
               attribute.nodeValue || ``
             );
           }
+
+          console.log(newHeadLinkElement);
 
           newHeadLinkElement.onerror = () => resolve();
 
