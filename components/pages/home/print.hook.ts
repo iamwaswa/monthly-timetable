@@ -89,9 +89,15 @@ export function usePrint<TElement extends HTMLElement>(
 
           console.log(newHeadLinkElement);
 
-          newHeadLinkElement.onerror = () => resolve();
+          newHeadLinkElement.onerror = () => {
+            console.log(`error`);
+            resolve();
+          };
 
-          newHeadLinkElement.onload = () => resolve();
+          newHeadLinkElement.onload = () => {
+            console.log(`load`);
+            resolve();
+          };
 
           printWindowDocument.head.appendChild(newHeadLinkElement);
         } else {
