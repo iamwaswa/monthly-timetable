@@ -46,13 +46,12 @@ export function usePrint<TElement extends HTMLElement>(
     }
   }, []);
 
-  const addStylesToPrintWindow = useCallback(
-    (printWindowDocument: Document, printWindowIframe: HTMLIFrameElement) => {
-      Array.from(document.querySelectorAll(`style`))
-        .filter((styleElement) => {
-          return styleElement.parentNode?.nodeName.toLowerCase() === `head`;
-        })
-        .forEach((headStyleElement) => {
+  const addStylesToPrintWindowAsync = useCallback(
+    async (printWindowDocument: Document) => {
+      return new Promise<void>((resolve) => {
+        const headStyleElement = document.querySelector(`style`);
+
+        if (headStyleElement) {
           const newStyleElement = printWindowDocument.createElement(
             headStyleElement.tagName
           );
@@ -70,48 +69,33 @@ export function usePrint<TElement extends HTMLElement>(
 
             printWindowDocument.head.appendChild(newStyleElement);
           }
-        });
-
-      const linkElements = Array.from(
-        document.querySelectorAll(`link[rel="stylesheet"]`)
-      ).filter((linkElement) => {
-        return (
-          linkElement.parentNode?.nodeName.toLowerCase() === `head` &&
-          linkElement.getAttribute(`href`) &&
-          !linkElement.hasAttribute(`disabled`)
-        );
-      });
-
-      let linkElementsCount = linkElements.length;
-
-      linkElements.forEach((linkElement) => {
-        const newHeadLinkElement = printWindowDocument.createElement(
-          linkElement.tagName
-        );
-
-        for (const attribute of Array.from(newHeadLinkElement.attributes)) {
-          newHeadLinkElement.setAttribute(
-            attribute.nodeName,
-            attribute.nodeValue || ``
-          );
         }
 
-        newHeadLinkElement.onload = decreateLinkElementsCount;
+        const linkElement = document.querySelector(`link[rel="stylesheet"]`);
 
-        newHeadLinkElement.onerror = decreateLinkElementsCount;
+        if (linkElement) {
+          const newHeadLinkElement = printWindowDocument.createElement(
+            linkElement.tagName
+          );
 
-        printWindowDocument.head.appendChild(newHeadLinkElement);
-
-        function decreateLinkElementsCount() {
-          linkElementsCount--;
-
-          if (linkElementsCount === 0) {
-            handlePrint(printWindowIframe);
+          for (const attribute of Array.from(newHeadLinkElement.attributes)) {
+            newHeadLinkElement.setAttribute(
+              attribute.nodeName,
+              attribute.nodeValue || ``
+            );
           }
+
+          newHeadLinkElement.onerror = () => resolve();
+
+          newHeadLinkElement.onload = () => resolve();
+
+          printWindowDocument.head.appendChild(newHeadLinkElement);
+        } else {
+          resolve();
         }
       });
     },
-    [handlePrint]
+    []
   );
 
   const print = useCallback(() => {
@@ -120,7 +104,7 @@ export function usePrint<TElement extends HTMLElement>(
     if (elementToPrintRef.current) {
       const content = elementToPrintRef.current;
 
-      printWindowIframe.onload = () => {
+      printWindowIframe.onload = async () => {
         const printWindowDocument =
           printWindowIframe.contentDocument ??
           printWindowIframe.contentWindow?.document;
@@ -132,7 +116,9 @@ export function usePrint<TElement extends HTMLElement>(
 
           addClassesToPrintWindowBody(bodyClass, printWindowDocument);
 
-          addStylesToPrintWindow(printWindowDocument, printWindowIframe);
+          await addStylesToPrintWindowAsync(printWindowDocument);
+
+          handlePrint(printWindowIframe);
         }
       };
 
@@ -143,8 +129,9 @@ export function usePrint<TElement extends HTMLElement>(
   }, [
     bodyClass,
     addClassesToPrintWindowBody,
-    addStylesToPrintWindow,
+    addStylesToPrintWindowAsync,
     createPrintWindowIframe,
+    handlePrint,
   ]);
 
   return [elementToPrintRef, print];
