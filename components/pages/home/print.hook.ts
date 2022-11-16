@@ -81,6 +81,7 @@ export function usePrint<TElement extends HTMLElement>(
           );
 
           for (const attribute of Array.from(newHeadLinkElement.attributes)) {
+            console.log(attribute.nodeName, attribute.nodeValue);
             newHeadLinkElement.setAttribute(
               attribute.nodeName,
               attribute.nodeValue || ``
