@@ -74,29 +74,22 @@ export function usePrint<TElement extends HTMLElement>(
         const linkElement = document.querySelector(`link[rel="stylesheet"]`);
 
         if (linkElement) {
-          console.log(linkElement);
-
           const newHeadLinkElement = printWindowDocument.createElement(
             linkElement.tagName
           );
 
-          for (const attribute of Array.from(newHeadLinkElement.attributes)) {
-            console.log(attribute.nodeName, attribute.nodeValue);
+          for (const attribute of Array.from(linkElement.attributes)) {
             newHeadLinkElement.setAttribute(
               attribute.nodeName,
               attribute.nodeValue || ``
             );
           }
 
-          console.log(newHeadLinkElement);
-
           newHeadLinkElement.onerror = () => {
-            console.log(`error`);
             resolve();
           };
 
           newHeadLinkElement.onload = () => {
-            console.log(`load`);
             resolve();
           };
 
