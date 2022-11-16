@@ -38,8 +38,16 @@ export function usePrint<TElement extends HTMLElement>(
     []
   );
 
-  const appendHeadStylesToPrintWindow = useCallback(
-    (printWindowDocument: Document) => {
+  const handlePrint = useCallback((printWindow: HTMLIFrameElement) => {
+    if (printWindow.contentWindow) {
+      printWindow.contentWindow.print();
+    } else {
+      throw new Error(`Print window missing the content window`);
+    }
+  }, []);
+
+  const addStylesToPrintWindow = useCallback(
+    (printWindowDocument: Document, printWindowIframe: HTMLIFrameElement) => {
       Array.from(document.querySelectorAll(`style`))
         .filter((styleElement) => {
           return styleElement.parentNode?.nodeName.toLowerCase() === `head`;
@@ -64,24 +72,47 @@ export function usePrint<TElement extends HTMLElement>(
           }
         });
 
-      Array.from(document.querySelectorAll(`link[rel="stylesheet"]`))
-        .filter((linkElement) => {
-          return linkElement.parentNode?.nodeName.toLowerCase() === `head`;
-        })
-        .forEach((linkElement) => {
-          printWindowDocument.head.appendChild(linkElement);
-        });
-    },
-    []
-  );
+      const linkElements = Array.from(
+        document.querySelectorAll(`link[rel="stylesheet"]`)
+      ).filter((linkElement) => {
+        return (
+          linkElement.parentNode?.nodeName.toLowerCase() === `head` &&
+          linkElement.getAttribute(`href`) &&
+          !linkElement.hasAttribute(`disabled`)
+        );
+      });
 
-  const handlePrint = useCallback((printWindow: HTMLIFrameElement) => {
-    if (printWindow.contentWindow) {
-      printWindow.contentWindow.print();
-    } else {
-      throw new Error(`Print window missing the content window`);
-    }
-  }, []);
+      let linkElementsCount = linkElements.length;
+
+      linkElements.forEach((linkElement) => {
+        const newHeadLinkElement = printWindowDocument.createElement(
+          linkElement.tagName
+        );
+
+        for (const attribute of Array.from(newHeadLinkElement.attributes)) {
+          newHeadLinkElement.setAttribute(
+            attribute.nodeName,
+            attribute.nodeValue || ``
+          );
+        }
+
+        newHeadLinkElement.onload = decreateLinkElementsCount;
+
+        newHeadLinkElement.onerror = decreateLinkElementsCount;
+
+        printWindowDocument.head.appendChild(newHeadLinkElement);
+
+        function decreateLinkElementsCount() {
+          linkElementsCount--;
+
+          if (linkElementsCount === 0) {
+            handlePrint(printWindowIframe);
+          }
+        }
+      });
+    },
+    [handlePrint]
+  );
 
   const print = useCallback(() => {
     const printWindowIframe = createPrintWindowIframe();
@@ -101,9 +132,7 @@ export function usePrint<TElement extends HTMLElement>(
 
           addClassesToPrintWindowBody(bodyClass, printWindowDocument);
 
-          appendHeadStylesToPrintWindow(printWindowDocument);
-
-          handlePrint(printWindowIframe);
+          addStylesToPrintWindow(printWindowDocument, printWindowIframe);
         }
       };
 
@@ -114,9 +143,8 @@ export function usePrint<TElement extends HTMLElement>(
   }, [
     bodyClass,
     addClassesToPrintWindowBody,
-    appendHeadStylesToPrintWindow,
+    addStylesToPrintWindow,
     createPrintWindowIframe,
-    handlePrint,
   ]);
 
   return [elementToPrintRef, print];
