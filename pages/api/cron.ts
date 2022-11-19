@@ -3,6 +3,7 @@ import webpush from "web-push";
 import { NextApiRequest, NextApiResponse } from "next";
 
 import { monthsOfTheYear } from "~/constants";
+import { databaseUtils } from "~/database";
 
 const vapidDetails = {
   publicKey: process.env.NEXT_VAPID_PUBLIC_KEY ?? ``,
@@ -28,15 +29,7 @@ export default async function handler(
         });
 
         // Get all subscriptions from the database
-        const subscriptions = await Promise.resolve([
-          {
-            endpoint: ``,
-            keys: {
-              p256dh: ``,
-              auth: ``,
-            },
-          },
-        ]);
+        const subscriptions = await databaseUtils.getSubscriptionsAsync();
 
         // Send notification payload to each subscription
         await Promise.all(
