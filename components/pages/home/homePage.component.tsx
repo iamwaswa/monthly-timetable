@@ -1,10 +1,14 @@
+import fetch from "isomorphic-fetch";
+
 import type { ChangeEvent } from "react";
 
 import { monthsOfTheYear } from "~/constants";
 import type { DayOfTheWeek, Task } from "~/types";
+import { base64StringToUint8Array } from "~/utils";
 
 import { useMonth } from "./month.hook";
 import { usePrint } from "./print.hook";
+import { useRegisterServiceWorker } from "./registerServiceWorker.hook";
 import { useTasks } from "./tasks.hook";
 import { useYear } from "./year.hook";
 
@@ -12,6 +16,8 @@ import { Select } from "./select";
 import { TasksForTheMonth } from "./tasksForTheMonth";
 
 export function HomePage() {
+  useRegisterServiceWorker();
+
   const [tasksForTheMonthRef, printTasksForTheMonth] =
     usePrint<HTMLDivElement>();
 
@@ -41,6 +47,56 @@ export function HomePage() {
         };
       });
     };
+  }
+
+  async function handlePrintAsync() {
+    const promises: Array<Promise<void>> = [];
+
+    if (Notification.permission === `default`) {
+      const permission = await Notification.requestPermission();
+
+      promises.push(
+        new Promise(async (resolve) => {
+          if (permission === `granted`) {
+            const registration =
+              await navigator.serviceWorker.getRegistration();
+
+            if (registration) {
+              let subscription =
+                await registration.pushManager.getSubscription();
+
+              if (!subscription) {
+                subscription = await registration.pushManager.subscribe({
+                  userVisibleOnly: true,
+                  applicationServerKey: base64StringToUint8Array(
+                    process.env.NEXT_VAPID_PUBLIC_KEY ?? ``
+                  ),
+                });
+
+                fetch(`/add-subscription`, {
+                  method: `POST`,
+                  headers: {
+                    [`Content-Type`]: `application/json`,
+                  },
+                  body: JSON.stringify(subscription),
+                });
+              }
+            }
+          }
+
+          resolve();
+        })
+      );
+    }
+
+    promises.push(
+      new Promise((resolve) => {
+        printTasksForTheMonth();
+        resolve();
+      })
+    );
+
+    return Promise.all(promises);
   }
 
   return (
@@ -90,7 +146,7 @@ export function HomePage() {
         <button
           className="bg-slate-100 text-slate-800 p-4 rounded-full shadow-md hover:shadow-lg"
           type="button"
-          onClick={printTasksForTheMonth}
+          onClick={handlePrintAsync}
         >
           Print
         </button>

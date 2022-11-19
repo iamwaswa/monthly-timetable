@@ -1,1 +1,1 @@
-export * from "./ui.constants";
+export * from "./shared.constants";
