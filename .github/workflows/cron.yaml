@@ -1,0 +1,14 @@
+name: daily-cron
+on:
+  schedule:
+    # Scheduled to run at 9am from the 24th to the 31st of each month
+    - cron: "0 9 24-31 * *"
+jobs:
+  cron:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call api route
+        run: |
+          curl --request POST \
+          --url '${{ secrets.API_URL }}/api/cron' \
+          --header 'Authorization: Bearer ${{ secrets.API_SECRET_KEY }}'
