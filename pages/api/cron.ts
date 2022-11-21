@@ -1,9 +1,9 @@
-import webpush from "web-push";
+import webpush, { PushSubscription } from "web-push";
 
 import { NextApiRequest, NextApiResponse } from "next";
 
 import { monthsOfTheYear } from "~/constants";
-import { databaseUtils } from "~/database";
+import { databaseUtils } from "database";
 
 const vapidDetails = {
   publicKey: process.env.NEXT_VAPID_PUBLIC_KEY ?? ``,
@@ -34,12 +34,16 @@ export default async function handler(
         // Send notification payload to each subscription
         await Promise.all(
           subscriptions.map((subscription) =>
-            webpush.sendNotification(subscription, notificationPayload, {
-              // * push message will be retained by the push service for 3 hours
-              TTL: 10000,
-              // * authentication information
-              vapidDetails,
-            })
+            webpush.sendNotification(
+              subscription as unknown as PushSubscription,
+              notificationPayload,
+              {
+                // * push message will be retained by the push service for 3 hours
+                TTL: 10000,
+                // * authentication information
+                vapidDetails,
+              }
+            )
           )
         );
 

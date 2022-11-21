@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
-import { databaseUtils } from "~/database";
+import { databaseUtils } from "database";
 
 export default async function handler(
   req: NextApiRequest,
@@ -15,7 +15,7 @@ export default async function handler(
       ) {
         res.status(422).end();
       } else {
-        await databaseUtils.addSusbscriptionAsync(req.body);
+        await databaseUtils.addSubscriptionAsync(req.body);
         res.status(201).end();
       }
     } catch (err) {
