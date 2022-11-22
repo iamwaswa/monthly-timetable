@@ -68,7 +68,7 @@ export function HomePage() {
               subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: base64StringToUint8Array(
-                  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ``
+                  `BJhWo57CxcG__TeF4Nz_IsvpezZ6nXrPjnq7tRmINtHuUsccqm0Mz2snHA3fhPaxTssYA26FIBo5NWRrWZfzXNA`
                 ),
               });
 

@@ -19,7 +19,8 @@ export const databaseUtils: DatabaseUtils = {
       if (error) {
         throw new Error(error.message);
       }
-    } catch {
+    } catch (error) {
+      console.error(error);
       throw new Error(`Could not add subscription`);
     }
   },
@@ -34,7 +35,8 @@ export const databaseUtils: DatabaseUtils = {
       }
 
       return data;
-    } catch {
+    } catch (error) {
+      console.error(error);
       throw new Error(`Could not get subscriptions`);
     }
   },

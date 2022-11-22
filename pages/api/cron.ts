@@ -47,15 +47,16 @@ export default async function handler(
           )
         );
 
-        res.status(200).end();
+        res.status(200).send(`Cron job executed successfully!`);
       } else {
-        res.status(401).end();
+        res.status(401).send(`Not authenticated`);
       }
     } catch (err) {
-      res.status(500).end();
+      console.error(err);
+      res.status(500).json(err);
     }
   } else {
     res.setHeader(`Allow`, `POST`);
-    res.status(405).end(`Method Not Allowed`);
+    res.status(405).send(`Method Not Allowed`);
   }
 }
