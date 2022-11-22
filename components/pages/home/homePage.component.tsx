@@ -50,53 +50,46 @@ export function HomePage() {
   }
 
   async function handlePrintAsync() {
-    const promises: Array<Promise<void>> = [];
+    return Promise.all([
+      new Promise<void>(async (resolve) => {
+        let permission = Notification.permission;
 
-    if (Notification.permission === `default`) {
-      const permission = await Notification.requestPermission();
+        if (permission === `default`) {
+          permission = await Notification.requestPermission();
+        }
 
-      promises.push(
-        new Promise(async (resolve) => {
-          if (permission === `granted`) {
-            const registration =
-              await navigator.serviceWorker.getRegistration();
+        if (permission === `granted`) {
+          const registration = await navigator.serviceWorker.getRegistration();
 
-            if (registration) {
-              let subscription =
-                await registration.pushManager.getSubscription();
+          if (registration) {
+            let subscription = await registration.pushManager.getSubscription();
 
-              if (!subscription) {
-                subscription = await registration.pushManager.subscribe({
-                  userVisibleOnly: true,
-                  applicationServerKey: base64StringToUint8Array(
-                    process.env.NEXT_VAPID_PUBLIC_KEY ?? ``
-                  ),
-                });
+            if (!subscription) {
+              subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: base64StringToUint8Array(
+                  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ``
+                ),
+              });
 
-                fetch(`/add-subscription`, {
-                  method: `POST`,
-                  headers: {
-                    [`Content-Type`]: `application/json`,
-                  },
-                  body: JSON.stringify(subscription),
-                });
-              }
+              fetch(`/api/add-subscription`, {
+                method: `POST`,
+                headers: {
+                  [`Content-Type`]: `application/json`,
+                },
+                body: JSON.stringify(subscription),
+              });
             }
           }
+        }
 
-          resolve();
-        })
-      );
-    }
-
-    promises.push(
-      new Promise((resolve) => {
+        resolve();
+      }),
+      new Promise<void>((resolve) => {
         printTasksForTheMonth();
         resolve();
-      })
-    );
-
-    return Promise.all(promises);
+      }),
+    ]);
   }
 
   return (
