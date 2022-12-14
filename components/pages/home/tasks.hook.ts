@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { DayTasks } from "~/types";
 import { isValidBrowserStorageItem, createDayTasks } from "~/utils";
@@ -9,7 +9,7 @@ export function useTasks(): [DayTasks, Dispatch<SetStateAction<DayTasks>>] {
 
   const updatedFromLocalStorage = useRef<boolean>(false);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const storedItem = localStorage.getItem(`tasks`);
     updatedFromLocalStorage.current = true;
     if (storedItem) {
