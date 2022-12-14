@@ -42,11 +42,6 @@ export const TasksForTheMonth = forwardRef<
   return (
     <section className={className}>
       <section className="flex flex-col gap-4" ref={ref}>
-        <style type="text/css" media="print">
-          {"\
-            @page { size: landscape; }\
-          "}
-        </style>
         <h2 className="text-3xl text-center font-medium">
           {month} {year}
         </h2>
