@@ -1,5 +1,6 @@
 import { MutableRefObject, useId } from "react";
 import { useCallback, useRef } from "react";
+import { useReactToPrint } from "react-to-print";
 
 export function usePrint<TElement extends HTMLElement>(): [
   MutableRefObject<TElement | null>,
@@ -8,6 +9,14 @@ export function usePrint<TElement extends HTMLElement>(): [
   const printWindowId = useId();
 
   const elementToPrintRef = useRef<TElement | null>(null);
+
+  const reactToPrint = useReactToPrint({
+    documentTitle: `Monthly Timetable`,
+    pageStyle: `m-1`,
+    content() {
+      return elementToPrintRef.current;
+    },
+  });
 
   const print = useCallback(() => {
     const printWindowIframe = createPrintWindowIframe(printWindowId);
@@ -37,7 +46,7 @@ export function usePrint<TElement extends HTMLElement>(): [
     }
   }, [printWindowId]);
 
-  return [elementToPrintRef, print];
+  return [elementToPrintRef, reactToPrint];
 }
 
 function createPrintWindowIframe(id: string) {

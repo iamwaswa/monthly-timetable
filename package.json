@@ -11,6 +11,7 @@
     "next": "latest",
     "react": "18.1.0",
     "react-dom": "18.1.0",
+    "react-to-print": "^2.14.11",
     "web-push": "^3.5.0"
   },
   "devDependencies": {
