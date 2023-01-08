@@ -54,6 +54,7 @@ export const TasksForTheMonth = forwardRef<
               >
                 <span>{day}</span>
                 <input
+                  className="print:hidden"
                   type="color"
                   value={tasks[day].color}
                   onChange={handleColorChange(day)}
